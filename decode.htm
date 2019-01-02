@@ -1,0 +1,133 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+    <title>Image to File Converter</title>
+    <style type='text/css'>
+        body {
+            font-family: sans-serif;
+        }
+    </style>
+    <script type='text/javascript'>
+        function load() {
+            input = document.getElementById('fileinput');
+            if (!input) {
+                alert("Um, couldn't find the fileinput element.");
+            } else if (!input.files) {
+                alert("This browser doesn't seem to support the `files` property of file inputs.");
+            } else if (!input.files[0]) {
+                alert("Please select a file before clicking 'Load'");
+            } else if (input.files[0].size > 50331648) {
+                alert("Input file too big! (>48MB)");
+            } else {
+                var img = new Image();
+                img.onload = draw;
+                img.onerror = failed;
+                img.src = URL.createObjectURL(input.files[0]);
+            }
+        }
+
+        function draw() {
+            var canvas = document.getElementById('c');
+            canvas.width = this.width;
+            canvas.height = this.height;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(this, 0, 0);
+            decode();
+        }
+
+        function padding1(num, length) {
+            for (var len = (num + "").length; len < length; len = num.length) {
+                num = "0" + num;
+            }
+            return num;
+        }
+        function convertFromHex(hex) {
+            var hex = hex.toString();//force conversion
+            var str = '';
+            for (var i = 0; i < hex.length; i += 2)
+                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+            return str;
+        }
+        function decode() {
+            var d = ""
+            var f = 8
+            var st = ""
+            str = ""
+            var is = 0
+            canvas = document.getElementById('c');
+            context = canvas.getContext('2d');
+            imgd = context.getImageData(0, 0, canvas.width, canvas.height);
+            size = "0x" + padding1(imgd.data[0].toString(16), 2) + padding1(imgd.data[1].toString(16), 2) + padding1(imgd.data[2].toString(16), 2) + padding1(imgd.data[4].toString(16), 2) + padding1(imgd.data[5].toString(16), 2) + padding1(imgd.data[6].toString(16), 2)
+            i = 64;
+            while (f < 64 / 3 * 2 - 4) {
+                d = d + padding1(imgd.data[f].toString(16), 2) + padding1(imgd.data[f + 1].toString(16), 2) + padding1(imgd.data[f + 2].toString(16), 2)
+                f = f + 4
+            }
+            var filename = convertFromHex(parseInt("0x" + d).toString(16));
+            while (is < parseInt(size) * 2 - 2) {
+
+                for (id = 0; id < 3; id++) {
+                    is = is + 2
+                    st = st + padding1(imgd.data[i + id].toString(16), 2);
+                }
+                i = i + 4
+            }
+            /*
+                is++
+
+                if (i % 4 == 3 || i == parseInt(size) - 1) {
+                    is--
+                    str = str + st.substr(0, 6)
+                    st = ""
+					*/
+            Convert(st, filename)
+        }
+
+        function failed() {
+            console.error("The provided file couldn't be loaded as an Image media");
+        }
+
+        function Convert(cleaned_hex, filename) {
+
+            /*if (cleaned_hex.length % 2) {
+        alert ("Error: cleaned hex string length is odd.");     
+        return;
+      }
+*/
+            var binary = new Array();
+            for (var i = 0; i < cleaned_hex.length / 2; i++) {
+                var h = cleaned_hex.substr(i * 2, 2);
+                binary[i] = parseInt(h, 16);
+            }
+
+            var byteArray = new Uint8Array(binary);
+            href = window.URL.createObjectURL(new Blob([byteArray], {
+                type: 'application/octet-stream'
+            })),
+                download = (input.files[0].name.replace(".png", "") + "." + filename).toString()
+            document.getElementById('d').innerHTML = "<a href=" + href + " download=\"" + download + "\">Download</a>"
+
+            // Append anchor to body.
+            document.body.appendChild(a)
+            //a.click();
+
+            // Remove anchor from body
+            document.body.removeChild(a)
+        }
+    </script>
+</head>
+
+<body>
+    <form action='#' onsubmit="return false;">
+        <input type='file' id='fileinput' accept="image/x-png">
+        <input type='button' id='btnLoad' value='Load' onclick='load();'>
+    </form>
+    <br>
+    <canvas id="c" width="500" height="500"></canvas>
+    <br>
+    <span id="d"></span>
+</body>
+
+</html>

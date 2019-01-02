@@ -1,0 +1,159 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+    <title>File to Image Converter</title>
+    <style type='text/css'>
+        body {
+            font-family: sans-serif;
+        }
+    </style>
+    <script type='text/javascript'>
+        function loadFile() {
+            var input, file, fr;
+            canvas = document.getElementById('c');
+            context = canvas.getContext('2d');
+
+            canvasWidth = canvas.width;
+            canvasHeight = canvas.height;
+            if (typeof window.FileReader !== 'function') {
+                bodyAppend("p", "The file API isn't supported on this browser yet.");
+                return;
+            }
+
+            input = document.getElementById('fileinput');
+            if (!input) {
+                alert("Um, couldn't find the fileinput element.");
+            } else if (!input.files) {
+                alert("This browser doesn't seem to support the `files` property of file inputs.");
+            } else if (!input.files[0]) {
+                alert("Please select a file before clicking 'Load'");
+            } else if (input.files[0].size > 50331648) {
+                alert("Input file too big! (>48MB)");
+            } else {
+                file = input.files[0];
+                var width = Math.sqrt(input.files[0].size) / 1.7;
+                size = padding1(input.files[0].size.toString(16), 12);
+                canvas.height = parseInt("0x" + size) / (3 * width) + 5
+                canvas.width = width;
+                img = context.getImageData(0, 0, canvas.width, canvas.height);
+                fr = new FileReader();
+                fr.onload = receivedText;
+                fr.readAsText(file);
+            }
+
+            function receivedText() {
+                fr = new FileReader();
+                fr.onload = receivedBinary;
+                fr.readAsBinaryString(file);
+            }
+
+            function receivedBinary() {
+                showResult(fr, "Binary");
+            }
+
+        }
+
+        function padding1(num, length) {
+            for (var len = (num + "").length; len < length; len = num.length) {
+                num = "0" + num;
+            }
+            return num;
+        }
+        function convertToHex(str) {
+            var hex = '';
+            for (var i = 0; i < str.length; i++) {
+                hex += '' + str.charCodeAt(i).toString(16);
+            }
+            return hex;
+        }
+        function getFileExtension(filename) {
+            return filename.split('.').pop();
+        }
+        function showResult(fr, label) {
+            input = document.getElementById('fileinput');
+            var result, n, aByte, byteStr;
+            var d = size;
+            var f = 8
+            var g = 12
+            result = fr.result;
+            drawPixel(0, parseInt("0x" + d.substring(0, 2)), parseInt("0x" + d.substring(2, 4)), parseInt("0x" + d.substring(4, 6)))
+            drawPixel(4, parseInt("0x" + d.substring(6, 8)), parseInt("0x" + d.substring(8, 10)), parseInt("0x" + d.substring(10, 12)))
+            d = padding1(convertToHex(getFileExtension(input.files[0].name)), 60)
+            while (f < d.length / 3 * 2) {
+                drawPixel(f, parseInt("0x" + d.substring(g, g + 2)), parseInt("0x" + d.substring(g + 2, g + 4)), parseInt("0x" + d.substring(g + 4, g + 6)))
+                f = f + 4
+                g = g + 6
+            }
+            d = ""
+            for (n = 0; n < result.length + 3; ++n) {
+                aByte = result.charCodeAt(n);
+                byteStr = aByte.toString(16);
+                if (byteStr.length < 2) {
+                    byteStr = "0" + byteStr;
+                }
+                byteStr = "0x" + byteStr
+                d = d + byteStr
+                if (n % 3 == 2) {
+                    drawPixel(parseInt((n - 2) / 3 * 4) + 64, d.substring(0, 4), d.substring(4, 8), d.substring(8, 12))
+                    d = ""
+                }
+            }
+            context.putImageData(img, 0, 0)
+            imgdown = canvas.toDataURL("image/png");
+            i = document.getElementById('fileinput');
+            //document.getElementById('a').innerHTML = "<a href=" + imgdown + " download=" + i.files[0].name + ".png>Download file</a>"
+            document.getElementById('b').innerHTML = result.length
+            document.getElementById('a').innerHTML = "<a href=" + window.URL.createObjectURL(dataURItoBlob(imgdown)) + " download=\"" + i.files[0].name.replace(getFileExtension(input.files[0].name), "") + "png\">Download file</a>"
+        }
+        function dataURItoBlob(dataURI) {
+            // convert base64/URLEncoded data component to raw binary data held in a string
+            var byteString;
+            if (dataURI.split(',')[0].indexOf('base64') >= 0)
+                byteString = atob(dataURI.split(',')[1]);
+            else
+                byteString = unescape(dataURI.split(',')[1]);
+
+            // separate out the mime component
+            var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+            // write the bytes of the string to a typed array
+            var ia = new Uint8Array(byteString.length);
+            for (var i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+
+            return new Blob([ia], { type: mimeString });
+        }
+        function bodyAppend(tagName, innerHTML) {
+            var elm;
+
+            elm = document.createElement(tagName);
+            elm.innerHTML = innerHTML;
+            document.body.appendChild(elm);
+        }
+
+        function drawPixel(n, r, g, b) {
+            img.data[n + 0] = r;
+            img.data[n + 1] = g;
+            img.data[n + 2] = b;
+            img.data[n + 3] = 255;
+        }
+    </script>
+</head>
+
+<body>
+    <form action='#' onsubmit="return false;">
+        <input type='file' id='fileinput'>
+        <input type='button' id='btnLoad' value='Load' onclick='loadFile();'>
+    </form>
+    <br>
+    <canvas id="c" width="500" height="500"></canvas>
+    <br>
+    <span id=a></span>
+    <br>
+    <span id=b></span>
+</body>
+
+</html>
