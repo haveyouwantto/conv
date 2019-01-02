@@ -33,7 +33,7 @@
                 alert("Input file too big! (>48MB)");
             } else {
                 file = input.files[0];
-                var width = Math.sqrt(input.files[0].size) / 1.7;
+                var width = Math.sqrt(input.files[0].size) / Math.sqrt(3)+5;
                 size = padding1(input.files[0].size.toString(16), 12);
                 canvas.height = parseInt("0x" + size) / (3 * width) + 5
                 canvas.width = width;

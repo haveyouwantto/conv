@@ -108,13 +108,6 @@
             })),
                 download = (input.files[0].name.replace(".png", "") + "." + filename).toString()
             document.getElementById('d').innerHTML = "<a href=" + href + " download=\"" + download + "\">Download</a>"
-
-            // Append anchor to body.
-            document.body.appendChild(a)
-            //a.click();
-
-            // Remove anchor from body
-            document.body.removeChild(a)
         }
     </script>
 </head>
