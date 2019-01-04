@@ -34,7 +34,7 @@
             ctx.drawImage(this, 0, 0);
             try {
                 decode();
-            } catch (err) { alert("Error!\n" + err) }
+            } catch (err) { alert("Error!\nPNG not supported or corrupted.\n\n" + err) }
         }
 
         function padding1(num, length) {
