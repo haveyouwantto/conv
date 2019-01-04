@@ -18,8 +18,6 @@
                 alert("This browser doesn't seem to support the `files` property of file inputs.");
             } else if (!input.files[0]) {
                 alert("Please select a file before clicking 'Load'");
-            } else if (input.files[0].size > 50331648) {
-                alert("Input file too big! (>48MB)");
             } else {
                 var img = new Image();
                 img.onload = draw;
@@ -34,7 +32,9 @@
             canvas.height = this.height;
             var ctx = canvas.getContext('2d');
             ctx.drawImage(this, 0, 0);
-            decode();
+            try {
+                decode();
+            } catch (err) { alert("Error!\n" + err) }
         }
 
         function padding1(num, length) {
@@ -65,7 +65,8 @@
                 d = d + padding1(imgd.data[f].toString(16), 2) + padding1(imgd.data[f + 1].toString(16), 2) + padding1(imgd.data[f + 2].toString(16), 2)
                 f = f + 4
             }
-            var filename = convertFromHex(parseInt("0x" + d).toString(16));
+            var filename = convertFromHex(d.replace(/^0+/, ''));
+            document.getElementById('i').innerHTML = "File extension: " + filename + "<br>Size: " + parseInt(size) + " bytes"
             while (is < parseInt(size) * 2 - 2) {
 
                 for (id = 0; id < 3; id++) {
@@ -117,10 +118,11 @@
         <input type='file' id='fileinput' accept="image/x-png">
         <input type='button' id='btnLoad' value='Load' onclick='load();'>
     </form>
+    <span id="d"></span>
+    <br>
+    <span id="i"></span>
     <br>
     <canvas id="c" width="500" height="500"></canvas>
-    <br>
-    <span id="d"></span>
 </body>
 
 </html>
