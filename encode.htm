@@ -2,6 +2,44 @@
 <html>
 
 <head>
+        <style>
+             body {
+    color: #D8DEE9;
+    background-color: #1B2B34;
+  }
+  a{
+      color:#6699CC
+  }
+  input {
+    background-color: #343D46;
+    padding: 5px 16px;
+    color: #99C794;
+  }
+  .btn {
+    background-color: #6699CC;
+    border: none;
+    color: #D8DEE9;
+    padding: 5px 16px;
+    text-decoration: none;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    -webkit-transition-duration: 0.4s; /* Safari */
+transition-duration: 0.4s;
+  }
+  .btn:hover {
+background-color: #5FB3B3; /* Green */
+color: #D8DEE9;
+}
+  .str{
+      color:#99C794;
+  }
+  hr{
+      border: 1px solid #5FB3B3;
+  }
+
+            </style>
     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
     <title>File to Image Converter</title>
     <style type='text/css'>
@@ -147,7 +185,7 @@
 <body>
     <form action='#' onsubmit="return false;">
         <input type='file' id='fileinput'>
-        <input type='button' id='btnLoad' value='Load' onclick='loadFile();'>
+        <input type='button' class=btn id='btnLoad' value='Load' onclick='loadFile();'>
     </form>
     <font color=#ff0000>Max file size: 45 MB</font><br>
     <span id=a></span>
